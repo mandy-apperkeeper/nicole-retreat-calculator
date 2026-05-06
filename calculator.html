@@ -247,7 +247,7 @@ section { margin-bottom: 12px; }
 
 <!-- Modal -->
 <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
-  <div class="modal"><button class="modal-close" onclick="document.getElementById('modal-overlay').classList.remove('active')">×</button><pre id="modal-content"></pre></div>
+  <div class="modal"><button class="modal-close" onclick="document.getElementById('modal-overlay').classList.remove('active')">×</button><div id="modal-content" style="font-size:0.88em;line-height:1.8"></div></div>
 </div>
 <!-- Popup -->
 <div class="popup-overlay" id="popup-overlay" onclick="closePopup(event)">
@@ -516,165 +516,154 @@ function renderCompare() {
 
 // --- Documents ---
 const docs = {
-overview: `RETREAT PRICING — OVERVIEW (Nashville, IN)
+overview: `<h2 style="margin-bottom:12px">Retreat Pricing — Overview</h2>
+<p style="background:#f5f0eb;padding:10px;border-radius:6px;margin-bottom:16px"><strong>Nicole's target:</strong> ~$500/person, weekend, all-inclusive</p>
 
-NICOLE'S TARGET: ~$500/person, weekend, all-inclusive
+<h3 style="margin:16px 0 8px">Where That Sits</h3>
+<table style="width:100%;font-size:0.9em;border-collapse:collapse;margin-bottom:16px">
+<tr style="border-bottom:1px solid #e0d5c8"><td>Local self-directed (Waycross, Winter Wooly)</td><td style="text-align:right"><strong>$280–$400</strong></td></tr>
+<tr style="border-bottom:1px solid #e0d5c8;background:#f5f0eb"><td>► <strong>Nicole's retreat</strong></td><td style="text-align:right"><strong>~$500</strong></td></tr>
+<tr style="border-bottom:1px solid #e0d5c8"><td>DoArtWorx (no lodging)</td><td style="text-align:right">$540</td></tr>
+<tr style="border-bottom:1px solid #e0d5c8"><td>Ox-Bow (no instruction)</td><td style="text-align:right">$600</td></tr>
+<tr><td>Arrowmont/Shenandoah</td><td style="text-align:right">$811–$945</td></tr>
+</table>
 
-WHERE THAT SITS
-  Local self-directed (Waycross, Winter Wooly): $280–$400
-  ► Nicole's retreat: ~$500 ◄
-  DoArtWorx (no lodging): $540
-  Ox-Bow (no instruction): $600
-  Arrowmont/Shenandoah: $811–$945
+<h3 style="margin:16px 0 8px">Why $500 Works</h3>
+<ul style="padding-left:18px;margin-bottom:16px">
+<li>Above self-directed options — she's offering instruction + curation</li>
+<li>In line with Paper & i ($499–$549) and Art & Contemplation ($500–$700)</li>
+<li>Better value than DoArtWorx ($540, no lodging) or Ox-Bow ($600, no instruction)</li>
+<li>Approachable for first-timers; builds repeat audience</li>
+</ul>
 
-WHY $500 WORKS
-- Above self-directed options — because she's offering instruction + curation
-- In line with Paper & i ($499–$549) and Art & Contemplation ($500–$700)
-- Better value than DoArtWorx ($540 without lodging) or Ox-Bow ($600 without instruction)
-- Approachable for first-timers; builds repeat audience
+<h3 style="margin:16px 0 8px">The Formula</h3>
+<p style="background:#f9f7f2;padding:10px;border-radius:6px;font-family:monospace;font-size:0.85em;margin-bottom:16px">(Fixed Costs + Variable Costs × Guests) × (1 + Buffer) / (1 - Margin) / Guests = Price Per Person</p>
 
-THE FORMULA
-  (Fixed Costs + Variable Costs × Guests) × (1 + Buffer) / (1 - Margin) / Guests = Price Per Person
+<h3 style="margin:16px 0 8px">Nashville, IN Advantages</h3>
+<ul style="padding-left:18px;margin-bottom:16px">
+<li>Established artist colony (100+ years), Indiana Cultural District</li>
+<li>Brown County Art Gallery (est. 1926), multiple studios</li>
+<li>Natural beauty — state park, rolling hills, forests</li>
+<li>Walkable downtown, existing art tourism audience</li>
+<li>No structured visual art retreat currently exists — open market</li>
+<li>The setting does the work — you don't need a resort when the town is the draw</li>
+</ul>
 
-NASHVILLE, IN ADVANTAGES
-- Established artist colony (100+ years), Indiana Cultural District
-- Brown County Art Gallery (est. 1926), multiple studios
-- Natural beauty — state park, rolling hills, forests
-- Walkable downtown, existing art tourism audience
-- No structured visual art retreat currently exists — open market
-- The setting does the work — you don't need a resort when the town is the draw
+<h3 style="margin:16px 0 8px">Key Decisions</h3>
+<ol style="padding-left:18px;margin-bottom:16px">
+<li>Price with confidence. $500 is accessible, not cheap.</li>
+<li>Require a deposit (~$150). Reduces no-shows.</li>
+<li>Keep it simple. One price, everything included.</li>
+<li>Validate with 10–15 conversations first.</li>
+<li>Buffer 10–15% for surprises.</li>
+</ol>
 
-KEY DECISIONS
-1. Price with confidence. $500 is accessible, not cheap.
-2. Require a deposit (~$150). Reduces no-shows.
-3. Keep it simple. One price, everything included.
-4. Validate with 10–15 conversations first.
-5. Buffer 10–15% for surprises.
+<h3 style="margin:16px 0 8px">What Makes Retreats Great</h3>
+<ol style="padding-left:18px">
+<li>Connections > curriculum</li>
+<li>Welcome all levels explicitly</li>
+<li>Balance structure with free time</li>
+<li>Atmosphere > amenities (Nashville provides this for free)</li>
+<li>Small groups (8–12)</li>
+<li>First hour sets the tone</li>
+<li>Feed people well (thoughtful > fancy)</li>
+<li>End with momentum</li>
+<li>Your energy sets the room</li>
+</ol>`,
 
-WHAT MAKES RETREATS GREAT
-1. Connections > curriculum
-2. Welcome all levels explicitly
-3. Balance structure with free time
-4. Atmosphere > amenities (Nashville provides this for free)
-5. Small groups (8–12)
-6. First hour sets the tone
-7. Feed people well (thoughtful > fancy)
-8. End with momentum
-9. Your energy sets the room`,
+comparison: `<h2 style="margin-bottom:12px">Market Comparison — Where ~$500 Sits</h2>
+<p style="color:#8b6f47;font-size:0.85em;margin-bottom:16px">Verified from operator websites, May 2026</p>
 
-comparison: `MARKET COMPARISON — Where ~$500 Sits (May 2026)
+<h3 style="margin:16px 0 8px">Nicole's Position</h3>
+<table style="width:100%;font-size:0.88em;border-collapse:collapse;margin-bottom:16px">
+<tr style="border-bottom:1px solid #e0d5c8"><td>Local self-directed (no instruction)</td><td style="text-align:right">$280–$400</td></tr>
+<tr style="border-bottom:1px solid #e0d5c8;background:#f5f0eb"><td><strong>► Nicole's retreat</strong></td><td style="text-align:right"><strong>~$500</strong></td></tr>
+<tr style="border-bottom:1px solid #e0d5c8"><td>DoArtWorx (no lodging)</td><td style="text-align:right">$540</td></tr>
+<tr style="border-bottom:1px solid #e0d5c8"><td>Paper & i (weekend all-inclusive)</td><td style="text-align:right">$499–$549</td></tr>
+<tr style="border-bottom:1px solid #e0d5c8"><td>Ox-Bow (no instruction)</td><td style="text-align:right">$600</td></tr>
+<tr><td>Arrowmont weekend (institutional)</td><td style="text-align:right">$811–$931</td></tr>
+</table>
 
-━━━ NICOLE'S POSITION ━━━
-  Local self-directed (no instruction)............ $280–$400
-  ► Nicole's retreat (~$500) ◄
-  DoArtWorx (no lodging).......................... $540
-  Paper & i (weekend all-inclusive)................ $499–$549
-  Ox-Bow (no instruction)......................... $600
-  Arrowmont weekend (institutional)............... $811–$931
+<h3 style="margin:16px 0 8px">What $500 Includes vs. Others</h3>
+<table style="width:100%;font-size:0.82em;border-collapse:collapse;margin-bottom:16px">
+<tr style="background:#f5f0eb;font-weight:600"><td></td><td>Nicole ~$500</td><td>DoArtWorx $540</td><td>Ox-Bow $600</td><td>Arrowmont $811+</td></tr>
+<tr style="border-bottom:1px solid #e0d5c8"><td>Instruction</td><td>✓</td><td>✓</td><td>—</td><td>✓</td></tr>
+<tr style="border-bottom:1px solid #e0d5c8"><td>Supplies</td><td>✓</td><td>✓</td><td>—</td><td>✓</td></tr>
+<tr style="border-bottom:1px solid #e0d5c8"><td>Meals</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+<tr style="border-bottom:1px solid #e0d5c8"><td>Lodging</td><td>✓</td><td>—</td><td>✓</td><td>✓</td></tr>
+<tr><td>Small group</td><td>8–12</td><td>6</td><td>open</td><td>varies</td></tr>
+</table>
+<p style="margin-bottom:16px"><strong>Nicole offers more than DoArtWorx ($540, no lodging) and Ox-Bow ($600, no instruction) at a lower price.</strong></p>
 
-━━━ WHAT $500 INCLUDES vs. OTHERS ━━━
-                    Waycross   NICOLE    DoArtWorx  Ox-Bow   Arrowmont
-                    $280-350   ~$500     $540       $600     $811+
-  Instruction        —          ✓         ✓          —        ✓
-  Supplies           —          ✓         ✓          —        ✓
-  Meals              ✓          ✓         ✓          ✓        ✓
-  Lodging            ✓          ✓         —          ✓        ✓
-  Small group        varies     8-12      6          open     varies
-  Curated exp.       —          ✓         —          —        ✓
+<h3 style="margin:16px 0 8px">Brown County — What Exists Now</h3>
+<ul style="padding-left:18px;margin-bottom:8px">
+<li>Waycross: $280–$350 (self-directed, no instruction)</li>
+<li>Winter Wooly: ~$300–$400 (fiber arts, 90 people)</li>
+<li>SCBWI: ~$280–$350 (writing, 8 people)</li>
+<li>Art Guild: $165–$195/session (no retreat format)</li>
+</ul>
+<p style="background:#e8f5e9;padding:10px;border-radius:6px;margin-bottom:16px"><strong>The gap:</strong> No all-inclusive visual art retreat exists in Brown County. Nicole fills it.</p>
 
-Nicole offers MORE than DoArtWorx ($540, no lodging) and Ox-Bow ($600, no instruction).
+<h3 style="margin:16px 0 8px">Comparable Towns</h3>
+<ul style="padding-left:18px;margin-bottom:16px">
+<li>Mineral Point, WI — Shake Rag Alley, $50–$295/workshop (no lodging)</li>
+<li>Saugatuck, MI — Ox-Bow, $600/3-night (no instruction)</li>
+<li>Gatlinburg, TN — Arrowmont, $811+/weekend</li>
+<li><strong>Nashville, IN — Nothing yet. Nicole is first.</strong></li>
+</ul>
+<p style="font-size:0.78em;color:#999">Sources: waycrossccc.org, paigeshipleydesigns.com, paperandi.com, doartworx.com, ox-bow.org, arrowmont.org, shenandoahartdestination.com</p>`,
 
-━━━ BROWN COUNTY — WHAT EXISTS NOW ━━━
-  Waycross: $280–$350 (self-directed, no instruction)
-  Winter Wooly: ~$300–$400 (fiber arts, 90 people, meals optional)
-  SCBWI: ~$280–$350 (writing, 8 people)
-  Art Guild: $165–$195/session (no retreat format)
+research: `<h2 style="margin-bottom:12px">Detailed Research — Nashville, IN Retreat Market</h2>
 
-  What DOESN'T exist:
-  • All-inclusive visual art retreat with instruction
-  • Small-group curated creative weekend
-  • Anything at the ~$500 all-in price point
-  Nicole fills all three gaps.
+<h3 style="margin:16px 0 8px">The ~$500 Price Point — Who Else Lives Here</h3>
+<table style="width:100%;font-size:0.85em;border-collapse:collapse;margin-bottom:16px">
+<tr style="border-bottom:1px solid #e0d5c8"><td><strong>Paper & i</strong> "Art as Self Care"</td><td style="text-align:right">$499–$549</td><td style="font-size:0.85em;color:#8b6f47">Weekend, 5 meals + housing + instruction</td></tr>
+<tr style="border-bottom:1px solid #e0d5c8"><td><strong>DoArtWorx</strong> (Oulu WI)</td><td style="text-align:right">$540</td><td style="font-size:0.85em;color:#8b6f47">4 days, meals + instruction, NO lodging</td></tr>
+<tr style="border-bottom:1px solid #e0d5c8"><td><strong>Art & Contemplation</strong></td><td style="text-align:right">$500–$700</td><td style="font-size:0.85em;color:#8b6f47">2 nights, lodging + meals + workshops</td></tr>
+<tr style="border-bottom:1px solid #e0d5c8"><td><strong>Ox-Bow</strong> (Saugatuck MI)</td><td style="text-align:right">$600</td><td style="font-size:0.85em;color:#8b6f47">3 nights, lodging + meals, NO instruction</td></tr>
+<tr><td><strong>Michelle Guitard</strong> (ON)</td><td style="text-align:right">~$560 USD</td><td style="font-size:0.85em;color:#8b6f47">Weekend, lodging + meals + instruction</td></tr>
+</table>
+<p style="background:#f5f0eb;padding:10px;border-radius:6px;margin-bottom:16px">Nicole at ~$500 with lodging + meals + instruction + supplies = more than DoArtWorx and Ox-Bow offer at higher prices.</p>
 
-━━━ WHY $500 WORKS ━━━
-- Above self-directed ($280–$400) — she's offering real instruction + curation
-- In line with established retreats (Paper & i, Art & Contemplation)
-- Better value than programs charging more for less
-- "I can say yes without agonizing" price point
-- Builds repeat audience; can raise prices once she has testimonials
+<h3 style="margin:16px 0 8px">Local Competitive Landscape</h3>
+<ul style="padding-left:18px;margin-bottom:8px">
+<li><strong>Waycross</strong> — $280–$350, self-directed, no instruction</li>
+<li><strong>Winter Wooly</strong> — ~$300–$400, fiber arts, 90 people, meals optional</li>
+<li><strong>SCBWI Spring Into Story</strong> — ~$280–$350, writing, 8 max</li>
+<li><strong>Brown County Art Guild</strong> — $165–$195/session, no retreat format</li>
+</ul>
+<p style="background:#e8f5e9;padding:10px;border-radius:6px;margin-bottom:16px"><strong>The gap:</strong> No all-inclusive visual art retreat exists in Brown County.</p>
 
-━━━ COMPARABLE TOWNS ━━━
-  Mineral Point, WI — Shake Rag Alley, $50–$295/workshop (no lodging)
-  Saugatuck, MI — Ox-Bow, $600/3-night retreat (no instruction)
-  Gatlinburg, TN — Arrowmont, $811+/weekend
-  Nashville, IN — Nothing yet. Nicole is first.
+<h3 style="margin:16px 0 8px">Making $500 Feel Like a Steal</h3>
+<ul style="padding-left:18px;margin-bottom:16px">
+<li>All-inclusive simplicity — one price, no surprises</li>
+<li>Small group (8–12) — intimacy is the luxury</li>
+<li>The setting does the work — Nashville's reputation is free value</li>
+<li>Personal touches over expensive ones</li>
+<li>Feed people well (thoughtful > fancy)</li>
+<li>Winter Wooly charges $300–$400 for 90 people in a hotel. Nicole charges $500 for 8–12 in an intimate setting with real instruction. Completely different experience.</li>
+</ul>
 
-Sources: waycrossccc.org, paigeshipleydesigns.com, paperandi.com, doartworx.com,
-ox-bow.org, arrowmont.org, essa-art.org, shenandoahartdestination.com`,
+<h3 style="margin:16px 0 8px">Deposits & Payments</h3>
+<ul style="padding-left:18px;margin-bottom:16px">
+<li>$150 deposit (non-refundable)</li>
+<li>Balance due 30 days before</li>
+<li>Refund minus deposit if cancelled 30+ days out</li>
+</ul>
 
-research: `DETAILED RESEARCH — Nashville, IN Retreat Market
-
-━━━ THE ~$500 PRICE POINT ━━━
-Who else lives here and what they include:
-
-• Paper & i "Art as Self Care" — $499–$549
-  Weekend overnight, 5 meals + housing + instruction, small group
-• DoArtWorx (Oulu WI) — $540
-  4 days, meals + 13hrs instruction, NO lodging, only 6 spots
-• Art & Contemplation (Southeast US) — $500–$700
-  2 nights, lodging + meals + workshops + materials
-• Ox-Bow Artists Retreat (Saugatuck MI) — $600
-  3 nights, lodging + meals + studio, NO instruction
-• Michelle Guitard (ON) — ~$560 USD
-  Weekend, lodging + meals + instruction, intimate group
-
-Nicole at ~$500 with lodging + meals + instruction + supplies
-= more than DoArtWorx and Ox-Bow offer at higher prices.
-
-━━━ LOCAL COMPETITIVE LANDSCAPE ━━━
-What currently exists in/near Nashville, IN:
-
-• Waycross Artists/Writers Retreat — $280–$350
-  Self-directed, no instruction
-• Winter Wooly Retreat — ~$300–$400
-  Fiber arts (knitting), 90 people, meals optional
-• SCBWI Spring Into Story — ~$280–$350
-  Writing-focused, 8 writers max
-• Brown County Art Guild — $165–$195/session
-  No retreat format
-
-THE GAP: No all-inclusive visual art retreat exists in Brown County.
-
-━━━ MAKING $500 FEEL LIKE A STEAL ━━━
-• All-inclusive simplicity — one price, no surprises
-• Small group (8–12) — intimacy is the luxury
-• The setting does the work — Nashville's reputation is free value
-• Personal touches over expensive ones
-• Feed people well (thoughtful > fancy)
-• The Winter Wooly charges $300–$400 for 90 people in a hotel.
-  Nicole charges $500 for 8–12 in an intimate setting with real instruction.
-  Completely different experience.
-
-━━━ DEPOSITS & PAYMENTS ━━━
-At ~$500, keep it simple:
-• $150 deposit (non-refundable)
-• Balance due 30 days before
-• Refund minus deposit if cancelled 30+ days out
-
-━━━ INDUSTRY CONTEXT ━━━
-• 88% of wellness trips are domestic (GWI 2025)
-• US consumers spend ~$6,300/person/year on wellness
-• Market growing 7.6% annually through 2029
-• One host found willingness-to-pay was 50% higher than charged
-  → At $500, Nicole is likely under what people would pay.
-  That's fine for a first retreat — builds goodwill and repeat attendees.
-
-Sources: GWI 2025, paperandi.com, doartworx.com, ox-bow.org,
-waycrossccc.org, paigeshipleydesigns.com, selvaradov.net`
+<h3 style="margin:16px 0 8px">Industry Context</h3>
+<ul style="padding-left:18px;margin-bottom:16px">
+<li>88% of wellness trips are domestic (GWI 2025)</li>
+<li>US consumers spend ~$6,300/person/year on wellness</li>
+<li>Market growing 7.6% annually through 2029</li>
+<li>One host found willingness-to-pay was 50% higher than charged</li>
+<li>→ At $500, Nicole is likely under what people would pay. That's fine for a first retreat — builds goodwill and repeat attendees.</li>
+</ul>
+<p style="font-size:0.78em;color:#999">Sources: GWI 2025, paperandi.com, doartworx.com, ox-bow.org, waycrossccc.org, paigeshipleydesigns.com, selvaradov.net</p>`
 };
 
 function openDoc(key) {
-  document.getElementById('modal-content').textContent = docs[key];
+  document.getElementById('modal-content').innerHTML = docs[key];
   document.getElementById('modal-overlay').classList.add('active');
 }
 function closeModal(e) { if (e.target === e.currentTarget) e.currentTarget.classList.remove('active'); }
