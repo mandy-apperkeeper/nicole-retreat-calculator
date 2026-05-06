@@ -489,9 +489,11 @@ function renderTiers() {
 function saveScenario() {
   const minG = val('min-guests'), maxG = val('max-guests');
   if (!minG || !maxG) return;
+  const name = prompt('Name this scenario:', 'Scenario ' + (state.scenarios.length + 1));
+  if (!name) return;
   const atMin = calc(minG), atMax = calc(maxG);
   state.scenarios.push({
-    name: `Scenario ${state.scenarios.length + 1}`,
+    name: name,
     guests: `${minG}–${maxG}`,
     nights: val('nights'),
     price: `${fmt(atMax.price)} – ${fmt(atMin.price)}`,
