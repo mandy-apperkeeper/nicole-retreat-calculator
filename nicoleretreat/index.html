@@ -1,0 +1,850 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Retreat Pricing Calculator — Nashville, IN</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --cream: #faf7f2; --warm-white: #fff9f0; --brown: #5c4033; --brown-light: #8b6f47;
+  --tan: #c4a882; --sage: #7a8b6f; --rust: #b85c38; --text: #3a3028;
+  --border: #e0d5c8; --shadow: rgba(92,64,51,0.08); --radius: 8px;
+  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+}
+body { font-family: var(--font); background: var(--cream); color: var(--text); line-height: 1.5; font-size: 16px; -webkit-text-size-adjust: 100%; }
+.app { display: grid; grid-template-columns: 1fr 1fr; min-height: 100vh; }
+@media (max-width: 900px) { .app { display: block; } }
+.panel { padding: 24px; }
+.panel-left { background: var(--warm-white); border-right: 1px solid var(--border); }
+.panel-right { background: var(--cream); }
+@media (min-width: 901px) { .panel { overflow-y: auto; max-height: 100vh; } .panel-right { position: sticky; top: 0; } }
+@media (max-width: 900px) { .panel { padding: 16px; } .panel-left { border-right: none; border-bottom: 1px solid var(--border); } }
+h1 { font-size: 1.4em; color: var(--brown); margin-bottom: 2px; }
+.subtitle { color: var(--brown-light); font-size: 0.85em; margin-bottom: 12px; }
+.doc-btns { display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; }
+.doc-btn { background: var(--tan); color: #fff; border: none; padding: 5px 10px; border-radius: 4px; font-size: 0.75em; cursor: pointer; }
+.doc-btn:hover { background: var(--brown-light); }
+section { margin-bottom: 20px; }
+.section-title { font-size: 0.9em; font-weight: 600; color: var(--brown); border-bottom: 1px solid var(--border); padding-bottom: 4px; margin-bottom: 10px; }
+.section-note { font-size: 0.75em; color: var(--brown-light); margin-bottom: 10px; font-style: italic; }
+.field { margin-bottom: 10px; }
+.field label { display: flex; align-items: center; gap: 4px; font-size: 0.8em; font-weight: 500; margin-bottom: 3px; }
+.field input, .field select { width: 100%; padding: 6px 8px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.85em; background: #fff; }
+.field input:focus, .field select:focus { outline: none; border-color: var(--tan); box-shadow: 0 0 0 2px rgba(196,168,130,0.2); }
+.row { display: flex; gap: 10px; }
+.row .field { flex: 1; }
+.help-btn { background: none; border: 1px solid var(--border); border-radius: 50%; width: 16px; height: 16px; font-size: 10px; cursor: pointer; color: var(--brown-light); line-height: 1; display: inline-flex; align-items: center; justify-content: center; }
+.help-btn:hover { background: var(--tan); color: #fff; border-color: var(--tan); }
+.itemize-btn { background: none; border: none; cursor: pointer; font-size: 12px; margin-left: 4px; }
+.itemize-panel { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 8px; margin-top: 4px; }
+.itemize-panel .field { margin-bottom: 6px; }
+.goals-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 10px; }
+.goals-grid label { font-size: 0.78em; display: flex; align-items: center; gap: 4px; cursor: pointer; }
+.slider-row { margin-bottom: 8px; }
+.slider-row label { font-size: 0.78em; display: flex; justify-content: space-between; }
+.slider-row input[type=range] { width: 100%; margin-top: 2px; }
+.slider-note { font-size: 0.7em; color: var(--brown-light); }
+.tier-item { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; }
+.tier-item input { flex: 1; padding: 5px 7px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.82em; }
+.tier-item .remove-tier { background: none; border: none; color: var(--rust); cursor: pointer; font-size: 1.1em; }
+.add-tier-btn { background: var(--sage); color: #fff; border: none; padding: 5px 10px; border-radius: 4px; font-size: 0.78em; cursor: pointer; }
+.add-tier-btn:hover { opacity: 0.85; }
+/* Right panel */
+.hero-price { text-align: center; padding: 20px; background: linear-gradient(135deg, var(--warm-white), #f5ede3); border-radius: var(--radius); margin-bottom: 16px; border: 1px solid var(--border); }
+.hero-price .range { font-size: 2em; font-weight: 700; color: var(--brown); }
+.hero-price .range-sub { font-size: 0.8em; color: var(--brown-light); }
+.result-section { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; margin-bottom: 12px; }
+.result-section h3 { font-size: 0.82em; color: var(--brown); margin-bottom: 8px; }
+.guest-table { width: 100%; font-size: 0.8em; border-collapse: collapse; }
+.guest-table td { padding: 3px 6px; border-bottom: 1px solid var(--border); }
+.guest-table td:last-child { text-align: right; font-weight: 600; }
+.market-bar { position: relative; height: 24px; background: linear-gradient(90deg, var(--sage), var(--tan), var(--rust)); border-radius: 12px; margin: 8px 0; }
+.market-marker { position: absolute; top: -4px; height: 32px; width: 3px; background: var(--brown); border-radius: 2px; }
+.market-labels { display: flex; justify-content: space-between; font-size: 0.7em; color: var(--brown-light); }
+.break-even { font-size: 0.85em; padding: 8px; background: #e8f5e9; border-radius: var(--radius); text-align: center; margin-bottom: 12px; }
+.payment-plan { font-size: 0.8em; }
+.payment-plan div { display: flex; justify-content: space-between; padding: 2px 0; }
+.compare-btn { background: var(--brown); color: #fff; border: none; padding: 6px 12px; border-radius: 4px; font-size: 0.78em; cursor: pointer; margin-top: 8px; }
+.compare-btn:hover { opacity: 0.85; }
+.compare-table { width: 100%; font-size: 0.75em; border-collapse: collapse; margin-top: 8px; }
+.compare-table th, .compare-table td { padding: 4px 6px; border: 1px solid var(--border); text-align: left; }
+.compare-table th { background: var(--warm-white); }
+/* Reverse engineer */
+
+
+
+
+.reverse-results { margin-top: 10px; font-size: 0.8em; }
+.reverse-results div { padding: 2px 0; }
+/* Modal */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
+.modal-overlay.active { display: flex; }
+.modal { background: #fff; border-radius: var(--radius); max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; padding: 24px; position: relative; }
+.modal-close { position: absolute; top: 10px; right: 14px; background: none; border: none; font-size: 1.4em; cursor: pointer; color: var(--brown-light); }
+.modal pre { white-space: pre-wrap; font-size: 0.82em; line-height: 1.6; font-family: var(--font); }
+/* Popup */
+.popup-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 900; align-items: center; justify-content: center; }
+.popup-overlay.active { display: flex; }
+.popup { background: #fff; border-radius: var(--radius); max-width: 420px; width: 90%; max-height: 70vh; overflow-y: auto; padding: 20px; position: relative; }
+.popup-close { position: absolute; top: 8px; right: 12px; background: none; border: none; font-size: 1.2em; cursor: pointer; }
+.popup h4 { color: var(--brown); margin-bottom: 8px; font-size: 0.9em; }
+.popup p, .popup li { font-size: 0.8em; margin-bottom: 4px; }
+.popup ul { padding-left: 16px; }
+.popup a { color: var(--sage); }
+.popup .source { font-size: 0.7em; color: #999; margin-top: 8px; }
+.empty-state { text-align: center; color: var(--brown-light); padding: 40px 20px; font-size: 0.9em; }
+
+/* Approach selector */
+.approach-selector { margin-bottom: 16px; }
+.approach-label { font-size: 0.88em; font-weight: 600; margin-bottom: 8px; color: var(--brown); }
+.approach-btns { display: flex; gap: 8px; }
+.approach-btn { flex: 1; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius); background: #fff; font-size: 0.82em; font-weight: 600; cursor: pointer; transition: all 0.15s; text-align: center; }
+.approach-btn:hover { border-color: var(--brown); }
+.approach-btn.active { background: var(--brown); color: #fff; border-color: var(--brown); }
+.target-section { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; margin-bottom: 16px; }
+
+/* More compact layout */
+.fee-toggle { display: inline-flex; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 4px; }
+.fee-toggle-btn { background: #fff; border: none; padding: 4px 12px; font-size: 0.8em; font-weight: 600; cursor: pointer; color: var(--brown-light); transition: all 0.15s; }
+.fee-toggle-btn.active { background: var(--brown); color: #fff; }
+.fee-toggle-btn:not(.active):hover { background: var(--warm-white); }
+.panel-left { padding: 16px; }
+section { margin-bottom: 12px; }
+.section-title { font-size: 0.82em; margin-bottom: 8px; }
+.field { margin-bottom: 6px; }
+.field label { font-size: 0.72em; margin-bottom: 2px; }
+.field input, .field select { padding: 6px 8px; font-size: 0.85em; }
+.row { gap: 8px; margin-bottom: 6px; }
+.goals-grid label { font-size: 0.78em; }
+
+/* Mobile-first compact */
+@media (max-width: 700px) {
+  .app { grid-template-columns: 1fr; }
+  .panel-left, .panel-right { padding: 12px; }
+  .row { grid-template-columns: 1fr 1fr; gap: 6px; }
+  h1 { font-size: 1.1em; }
+  .subtitle { font-size: 0.75em; }
+  .doc-btns { gap: 4px; }
+  .doc-btn { padding: 4px 8px; font-size: 0.7em; }
+  .approach-btns { flex-direction: column; gap: 6px; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+<!-- LEFT PANEL -->
+<div class="panel panel-left">
+  <h1>Retreat Pricing Calculator</h1>
+  <p class="subtitle">Nashville, Indiana — Brown County Arts District</p>
+  <div class="doc-btns">
+    <button class="doc-btn" onclick="openDoc('overview')">Overview</button>
+    <button class="doc-btn" onclick="openDoc('comparison')">Market Comparison</button>
+    <button class="doc-btn" onclick="openDoc('research')">Detailed Research</button>
+  </div>
+
+  <!-- Section: Target & Retreat -->
+  <section>
+    <div class="section-title">The Retreat</div>
+    <div class="field" style="margin-bottom:12px;padding:8px 10px;background:var(--warm-white);border:1px solid var(--border);border-radius:var(--radius)">
+      <label style="font-weight:600">Target price per person <span style="font-weight:400;color:var(--brown-light)">(optional — leave blank to just build from costs)</span></label>
+      <input type="number" id="target-price" placeholder="e.g. 750" oninput="update()">
+    </div>
+    <div class="field"><label>Nights</label><input type="number" id="nights" min="1" placeholder="e.g. 3" oninput="update();calcLodgingFromVenue()"></div>
+    <div class="row">
+      <div class="field"><label>Min Guests</label><input type="number" id="min-guests" min="1" placeholder="e.g. 8" oninput="update();calcLodgingFromVenue()"></div>
+      <div class="field"><label>Max Guests</label><input type="number" id="max-guests" min="1" placeholder="e.g. 12" oninput="update();calcLodgingFromVenue()"></div>
+    </div>
+  </section>
+
+  <!-- Section 2: Goals -->
+  <section>
+    <div class="section-title">Goals</div>
+    <div class="goals-grid">
+      <label><input type="checkbox" onchange="updateGoals()"> Community & togetherness</label>
+      <label><input type="checkbox" onchange="updateGoals()"> Keep it affordable</label>
+      <label><input type="checkbox" onchange="updateGoals()"> Generate income</label>
+      <label><input type="checkbox" onchange="updateGoals()"> Premium experience</label>
+    </div>
+    <div class="slider-row"><label>Margin <span id="margin-val">20%</span></label><input type="range" id="margin" min="0" max="55" value="20" oninput="update(); document.getElementById('margin-val').textContent=this.value+'%'"></div>
+    <div class="slider-row"><label>Buffer <span id="buffer-val">10%</span></label><input type="range" id="buffer" min="0" max="20" value="10" oninput="update(); document.getElementById('buffer-val').textContent=this.value+'%'"></div>
+    <div class="slider-note" id="goal-note">Margin is your profit. Buffer covers surprises.</div>
+  </section>
+
+  <!-- Section 3: Fixed Costs -->
+  <section>
+    <div class="section-title">Fixed Costs</div>
+    <div class="section-note">These costs stay the same whether you have 8 guests or 12.</div>
+    <div class="field"><label>Venue/property (total) <button class="help-btn" onclick="showPopup('venue')">?</button></label><input type="number" id="cost-venue" placeholder="$" oninput="update();calcLodgingFromVenue()"></div>
+    <div class="field">
+      <label>Your fee <button class="help-btn" onclick="showPopup('fee')">?</button></label>
+      <div class="fee-toggle">
+        <button type="button" class="fee-toggle-btn active" data-mode="flat" onclick="setFeeMode('flat')">$</button>
+        <button type="button" class="fee-toggle-btn" data-mode="percent" onclick="setFeeMode('percent')">%</button>
+      </div>
+      <input type="number" id="cost-fee" placeholder="flat amount" oninput="update()">
+      <select id="fee-mode" onchange="update()" style="display:none"><option value="flat">Flat $</option><option value="percent">% of revenue</option></select>
+    </div>
+    <div class="field"><label>Insurance <button class="help-btn" onclick="showPopup('insurance')">?</button></label><input type="number" id="cost-insurance" placeholder="$" oninput="update()"></div>
+    <div class="field"><label>Marketing <button class="help-btn" onclick="showPopup('marketing')">?</button></label><input type="number" id="cost-marketing" placeholder="$" oninput="update()"></div>
+    <div class="field"><label>Other fixed <button class="help-btn" onclick="showPopup('other-fixed')">?</button></label><input type="number" id="cost-other-fixed" placeholder="$" oninput="update()"></div>
+  </section>
+
+  <!-- Section 4: Per-Guest Costs -->
+  <section>
+    <div class="section-title">Per-Guest Costs</div>
+    <div class="section-note">These costs multiply by the number of guests.</div>
+    <div class="field"><label>Lodging/person/night <button class="help-btn" onclick="showPopup('lodging')">?</button></label><input type="number" id="cost-lodging" placeholder="auto or enter manually" oninput="update()"><div id="lodge-auto-hint" style="font-size:0.7em;color:var(--brown-light);margin-top:3px"></div></div>
+    <div class="field">
+      <label>Meals/person/day <button class="help-btn" onclick="showPopup('meals')">?</button> <button class="itemize-btn" onclick="toggleItemize('meals')">📋</button></label>
+      <input type="number" id="cost-meals" placeholder="$" oninput="update()">
+      <div class="itemize-panel" id="itemize-meals" style="display:none">
+        <div class="field"><label>Breakfast</label><input type="number" id="meal-breakfast" placeholder="$" oninput="sumMeals()"></div>
+        <div class="field"><label>Lunch</label><input type="number" id="meal-lunch" placeholder="$" oninput="sumMeals()"></div>
+        <div class="field"><label>Dinner</label><input type="number" id="meal-dinner" placeholder="$" oninput="sumMeals()"></div>
+        <div class="field"><label>Snacks</label><input type="number" id="meal-snacks" placeholder="$" oninput="sumMeals()"></div>
+      </div>
+    </div>
+    <div class="field">
+      <label>Art supplies/person <button class="help-btn" onclick="showPopup('supplies')">?</button> <button class="itemize-btn" onclick="toggleItemize('supplies')">📋</button></label>
+      <input type="number" id="cost-supplies" placeholder="$" oninput="update()">
+      <div class="itemize-panel" id="itemize-supplies" style="display:none">
+        <div class="field"><label>Canvas/paper</label><input type="number" id="supply-canvas" placeholder="$" oninput="sumSupplies()"></div>
+        <div class="field"><label>Paint</label><input type="number" id="supply-paint" placeholder="$" oninput="sumSupplies()"></div>
+        <div class="field"><label>Brushes/tools</label><input type="number" id="supply-brushes" placeholder="$" oninput="sumSupplies()"></div>
+        <div class="field"><label>Other</label><input type="number" id="supply-other" placeholder="$" oninput="sumSupplies()"></div>
+      </div>
+    </div>
+    <div class="field"><label>Welcome kit (optional) <button class="help-btn" onclick="showPopup('welcome')">?</button></label><input type="number" id="cost-welcome" placeholder="$" oninput="update()"></div>
+    <div class="field"><label>Other per-person</label><input type="number" id="cost-other-pp" placeholder="$" oninput="update()"></div>
+  </section>
+
+  <!-- Section 5: Tiers -->
+  <section>
+    <div class="section-title">Pricing Tiers (optional)</div>
+    <div id="tiers-list"></div>
+    <button class="add-tier-btn" onclick="addTier()">+ Add Tier</button>
+  </section>
+  </div>
+</div>
+
+<!-- RIGHT PANEL -->
+<div class="panel panel-right" id="results-panel">
+  <div class="empty-state" id="empty-state">Enter your retreat details to see pricing calculations.</div>
+  <div id="results" style="display:none">
+    <div class="hero-price"><div class="range" id="hero-range">—</div><div class="range-sub" id="hero-sub"></div></div>
+    <div id="target-compare"></div>
+    <div class="result-section"><h3>Cost Breakdown</h3><div id="breakdown"></div></div>
+    <div class="break-even" id="break-even"></div>
+    <div class="result-section"><h3>Price by Guest Count</h3><table class="guest-table" id="guest-table"></table></div>
+    <div class="result-section"><h3>Market Position</h3><div class="market-bar"><div class="market-marker" id="market-min"></div><div class="market-marker" id="market-max"></div></div><div class="market-labels"><span>$300</span><span>$1,500</span><span>$3,000</span></div><p style="font-size:0.7em;color:#999;margin-top:4px">Scale based on 20+ verified retreat prices. See Market Comparison doc.</p></div>
+    <div class="result-section"><h3>Payment Plan</h3><div class="payment-plan" id="payment-plan"></div></div>
+    <div class="result-section" id="tiers-result" style="display:none"><h3>Tier Pricing</h3><div id="tiers-output"></div></div>
+    <div class="result-section"><h3>Compare Scenarios</h3><button class="compare-btn" onclick="saveScenario()">Save Current</button><div id="compare-output"></div></div>
+  </div>
+</div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal"><button class="modal-close" onclick="document.getElementById('modal-overlay').classList.remove('active')">×</button><pre id="modal-content"></pre></div>
+</div>
+<!-- Popup -->
+<div class="popup-overlay" id="popup-overlay" onclick="closePopup(event)">
+  <div class="popup"><button class="popup-close" onclick="document.getElementById('popup-overlay').classList.remove('active')">×</button><div id="popup-content"></div></div>
+</div>
+
+<script>
+// --- State ---
+const state = { tiers: [], scenarios: JSON.parse(localStorage.getItem('retreat-scenarios') || '[]') };
+
+function val(id) { return parseFloat(document.getElementById(id).value) || 0; }
+function fmt(n) { return '$' + Math.round(n).toLocaleString(); }
+
+function setFeeMode(mode) {
+  document.getElementById('fee-mode').value = mode;
+  document.querySelectorAll('.fee-toggle-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.mode === mode);
+  });
+  const input = document.getElementById('cost-fee');
+  input.placeholder = mode === 'flat' ? 'flat amount' : '% of revenue';
+  update();
+}
+
+// --- Core calculation ---
+function calcLodgingFromVenue() {
+  const input = document.getElementById('cost-lodging');
+  const hint = document.getElementById('lodge-auto-hint');
+  const venue = val('cost-venue');
+  const nights = val('nights');
+  const guests = val('max-guests') || val('min-guests');
+  
+  if (venue > 0 && nights > 0 && guests > 0) {
+    const perPersonNight = Math.round(venue / guests / nights);
+    // Auto-fill if empty or was previously auto-filled
+    if (!input.value || input.dataset.auto === 'true') {
+      input.value = perPersonNight;
+      input.dataset.auto = 'true';
+    }
+    hint.textContent = 'From venue: ' + fmt(venue) + ' \u00F7 ' + guests + ' guests \u00F7 ' + nights + ' nights = ' + fmt(perPersonNight) + '/night';
+  } else {
+    hint.textContent = '';
+  }
+}
+
+// Clear auto flag when user manually types
+document.getElementById('cost-lodging').addEventListener('input', function() {
+  if (this.dataset.auto === 'true') {
+    this.dataset.auto = 'false';
+    this.style.color = '';
+  }
+});
+
+function calc(guests) {
+  const nights = val('nights');
+  const days = nights + 1;
+  const feeMode = document.getElementById('fee-mode').value;
+  const feeInput = val('cost-fee');
+  const fixedNoFee = val('cost-venue') + val('cost-insurance') + val('cost-marketing') + val('cost-other-fixed');
+  const perPerson = (val('cost-lodging') * nights) + (val('cost-meals') * days) + val('cost-supplies') + val('cost-welcome') + val('cost-other-pp');
+  const margin = val('margin') / 100;
+  const buffer = val('buffer') / 100;
+
+  let price, fixed, profit;
+
+  if (feeMode === 'flat') {
+    // Fee is a known dollar amount added to fixed costs
+    fixed = fixedNoFee + feeInput;
+    const totalCost = fixed + perPerson * guests;
+    const buffered = totalCost * (1 + buffer);
+    price = buffered / guests / Math.max(0.01, 1 - margin);
+    profit = (price * guests) - buffered;
+  } else {
+    // Fee is a % of total revenue — solve algebraically:
+    // revenue = price * guests
+    // fee = revenue * (feeInput/100)
+    // costs = fixedNoFee + perPerson*guests + fee
+    // price = costs * (1+buffer) / guests / (1-margin)
+    // Substituting: price = (fixedNoFee + perPerson*guests + price*guests*feePct) * (1+buffer) / guests / (1-margin)
+    // Solving for price:
+    const feePct = feeInput / 100;
+    const baseCost = (fixedNoFee + perPerson * guests) * (1 + buffer);
+    const denom = guests * (1 - margin) - guests * feePct * (1 + buffer);
+    price = denom > 0 ? baseCost / denom : 0;
+    const revenue = price * guests;
+    const actualFee = revenue * feePct;
+    fixed = fixedNoFee + actualFee;
+    profit = revenue - (fixedNoFee + actualFee + perPerson * guests) * (1 + buffer);
+  }
+
+  const totalCost = fixed + perPerson * guests;
+  const bufferedCost = totalCost * (1 + buffer);
+  return { fixed, perPerson, totalCost, bufferedCost, price, profit, nights, days, margin, buffer, feeMode, feeInput };
+}
+
+// --- Render ---
+function update() {
+  const minG = val('min-guests'), maxG = val('max-guests');
+  if (!minG || !maxG || minG > maxG) {
+    document.getElementById('results').style.display = 'none';
+    document.getElementById('empty-state').style.display = 'block';
+    return;
+  }
+  document.getElementById('results').style.display = 'block';
+  document.getElementById('empty-state').style.display = 'none';
+
+  const atMin = calc(minG), atMax = calc(maxG);
+  const highPrice = atMin.price, lowPrice = atMax.price;
+
+  // Hero
+  document.getElementById('hero-range').textContent = (highPrice > 0 && isFinite(highPrice)) ? `${fmt(lowPrice)} – ${fmt(highPrice)}` : '—';
+  document.getElementById('hero-sub').textContent = `per person across ${minG}–${maxG} guests`;
+
+  // Target comparison
+  const target = val('target-price');
+  const targetEl = document.getElementById('target-compare');
+  if (target > 0 && highPrice > 0) {
+    const midPrice = (highPrice + lowPrice) / 2;
+    const diff = target - midPrice;
+    if (diff >= 0) {
+      targetEl.innerHTML = `<div style="padding:8px;background:#e8f5e9;border-radius:var(--radius);font-size:0.82em;margin-bottom:12px">Target: ${fmt(target)} — you're <strong>${fmt(diff)}</strong> under. Room to add value or increase margin.</div>`;
+    } else {
+      targetEl.innerHTML = `<div style="padding:8px;background:#fff3e0;border-radius:var(--radius);font-size:0.82em;margin-bottom:12px">Target: ${fmt(target)} — you're <strong>${fmt(Math.abs(diff))}</strong> over. Reduce costs or increase guests to close the gap.</div>`;
+    }
+  } else {
+    targetEl.innerHTML = '';
+  }
+
+  // Breakdown
+  const fixedPct = atMin.totalCost > 0 ? Math.round(atMin.fixed / atMin.totalCost * 100) : 0;
+  const varPct = 100 - fixedPct;
+  document.getElementById('breakdown').innerHTML = `
+    <div style="font-size:0.82em;line-height:1.8">
+      <div>Fixed costs total: <strong>${fmt(atMin.fixed)}</strong> (${fixedPct}% of base cost)</div>
+      <div>Variable costs per person: <strong>${fmt(atMin.perPerson)}</strong> (${varPct}% of base cost at ${minG} guests)</div>
+      <div>Fixed cost per person: ${fmt(atMin.fixed / maxG)} (at ${maxG}) to ${fmt(atMin.fixed / minG)} (at ${minG})</div>
+      <div>Profit (at ${minG} guests): <strong>${fmt(atMin.profit)}</strong></div>
+    </div>`;
+
+  // Guest table
+  let rows = '';
+  for (let g = minG; g <= maxG; g++) {
+    const r = calc(g);
+    rows += `<tr><td>${g} guests</td><td>${fmt(r.price)}/person</td></tr>`;
+  }
+  document.getElementById('guest-table').innerHTML = rows;
+
+  // Break-even
+  const beFixed = atMin.fixed * (1 + atMin.buffer);
+  const beVar = atMin.perPerson * (1 + atMin.buffer);
+  // At 0% margin, price = (fixed + var*g)*(1+buffer)/g, revenue = price*g = totalCost. Always breaks even at any count.
+  // Real break-even: at what guest count does revenue at the CALCULATED price cover costs?
+  // With margin, she profits at every guest. Show: "You cover all costs at [min] guests (margin provides profit above that)."
+  if (atMin.margin > 0) {
+    document.getElementById('break-even').textContent = `You cover all costs at ${minG} guests. Margin adds profit on top.`;
+  } else {
+    document.getElementById('break-even').textContent = `At 0% margin, you break even at any guest count — price exactly covers costs.`;
+  }
+
+  // Market position
+  const barMin = 300, barMax = 3000;
+  const pctLow = Math.max(0, Math.min(100, (lowPrice - barMin) / (barMax - barMin) * 100));
+  const pctHigh = Math.max(0, Math.min(100, (highPrice - barMin) / (barMax - barMin) * 100));
+  document.getElementById('market-min').style.left = pctLow + '%';
+  document.getElementById('market-max').style.left = pctHigh + '%';
+
+  // Payment plan (midpoint)
+  const mid = (highPrice + lowPrice) / 2;
+  const deposit = Math.round(mid * 0.3);
+  const second = Math.round(mid * 0.35);
+  const final = Math.round(mid) - deposit - second;
+  document.getElementById('payment-plan').innerHTML = `
+    <div><span>Deposit (30%)</span><span>${fmt(deposit)}</span></div>
+    <div><span>Second payment (35%)</span><span>${fmt(second)}</span></div>
+    <div><span>Final payment</span><span>${fmt(final)}</span></div>
+    <div style="border-top:1px solid var(--border);margin-top:4px;padding-top:4px"><span>Total</span><span>${fmt(deposit+second+final)}</span></div>`;
+
+  // Tiers
+  if (state.tiers.length > 0) {
+    document.getElementById('tiers-result').style.display = 'block';
+    let html = '<div style="font-size:0.82em">';
+    html += `<div style="margin-bottom:4px"><strong>Base:</strong> ${fmt(lowPrice)} – ${fmt(highPrice)}</div>`;
+    state.tiers.forEach(t => {
+      const adj = t.adjustment || 0;
+      html += `<div><strong>${t.name || 'Unnamed'}:</strong> ${fmt(lowPrice + adj)} – ${fmt(highPrice + adj)}</div>`;
+    });
+    html += '</div>';
+    document.getElementById('tiers-output').innerHTML = html;
+  } else {
+    document.getElementById('tiers-result').style.display = 'none';
+  }
+
+  renderCompare();
+}
+
+// --- Goals ---
+function updateGoals() {
+  const checks = document.querySelectorAll('.goals-grid input[type=checkbox]');
+  const goals = [];
+  checks.forEach((c, i) => { if (c.checked) goals.push(i); });
+  // Suggest values
+  const m = document.getElementById('margin'), b = document.getElementById('buffer');
+  if (goals.includes(1) && !goals.includes(2)) { m.value = 10; } // affordable
+  if (goals.includes(2) && !goals.includes(1)) { m.value = 35; } // income
+  if (goals.includes(3)) { m.value = Math.max(parseInt(m.value), 30); } // premium
+  if (goals.includes(0)) { b.value = 10; } // community
+  document.getElementById('margin-val').textContent = m.value + '%';
+  document.getElementById('buffer-val').textContent = b.value + '%';
+  // Note
+  const notes = [];
+  if (goals.includes(1)) notes.push('Lower margin keeps price accessible');
+  if (goals.includes(2)) notes.push('Higher margin generates income');
+  if (goals.includes(3)) notes.push('Premium positioning supports higher pricing');
+  if (goals.includes(0)) notes.push('Buffer protects the group experience');
+  document.getElementById('goal-note').textContent = notes.length ? notes.join('. ') + '.' : 'Margin is your profit. Buffer covers surprises.';
+  update();
+}
+
+// --- Itemize ---
+function toggleItemize(type) { const el = document.getElementById('itemize-' + type); el.style.display = el.style.display === 'none' ? 'block' : 'none'; }
+function sumMeals() { const t = val('meal-breakfast') + val('meal-lunch') + val('meal-dinner') + val('meal-snacks'); document.getElementById('cost-meals').value = t || ''; update(); }
+function sumSupplies() { const t = val('supply-canvas') + val('supply-paint') + val('supply-brushes') + val('supply-other'); document.getElementById('cost-supplies').value = t || ''; update(); }
+
+// --- Tiers ---
+function addTier() {
+  state.tiers.push({ name: '', adjustment: 0 });
+  renderTiers();
+}
+function removeTier(i) { state.tiers.splice(i, 1); renderTiers(); update(); }
+function renderTiers() {
+  const el = document.getElementById('tiers-list');
+  el.innerHTML = state.tiers.map((t, i) => `
+    <div class="tier-item">
+      <input type="text" placeholder="Tier name" value="${t.name}" oninput="state.tiers[${i}].name=this.value; update()">
+      <input type="number" placeholder="+/- $" value="${t.adjustment || ''}" style="width:80px" oninput="state.tiers[${i}].adjustment=parseFloat(this.value)||0; update()">
+      <button class="remove-tier" onclick="removeTier(${i})">×</button>
+    </div>`).join('');
+}
+
+// --- Compare Scenarios ---
+function saveScenario() {
+  const minG = val('min-guests'), maxG = val('max-guests');
+  if (!minG || !maxG) return;
+  const atMin = calc(minG), atMax = calc(maxG);
+  state.scenarios.push({
+    name: `Scenario ${state.scenarios.length + 1}`,
+    guests: `${minG}–${maxG}`,
+    nights: val('nights'),
+    price: `${fmt(atMax.price)} – ${fmt(atMin.price)}`,
+    fixed: fmt(atMin.fixed),
+    margin: val('margin') + '%',
+    ts: Date.now()
+  });
+  localStorage.setItem('retreat-scenarios', JSON.stringify(state.scenarios));
+  renderCompare();
+}
+function clearScenarios() { state.scenarios = []; localStorage.removeItem('retreat-scenarios'); renderCompare(); }
+function renderCompare() {
+  const el = document.getElementById('compare-output');
+  if (state.scenarios.length < 1) { el.innerHTML = ''; return; }
+  let html = '<table class="compare-table"><tr><th></th><th>Guests</th><th>Nights</th><th>Price Range</th><th>Fixed</th><th>Margin</th></tr>';
+  state.scenarios.forEach(s => { html += `<tr><td>${s.name}</td><td>${s.guests}</td><td>${s.nights}</td><td>${s.price}</td><td>${s.fixed}</td><td>${s.margin}</td></tr>`; });
+  html += '</table>';
+  if (state.scenarios.length > 0) html += `<button class="compare-btn" style="background:var(--rust);margin-top:6px" onclick="clearScenarios()">Clear All</button>`;
+  el.innerHTML = html;
+}
+
+// --- Documents ---
+const docs = {
+overview: `RETREAT PRICING — OVERVIEW (Nashville, IN)
+
+NICOLE'S TARGET: ~$500/person, weekend, all-inclusive
+
+WHERE THAT SITS
+  Local self-directed (Waycross, Winter Wooly): $280–$400
+  ► Nicole's retreat: ~$500 ◄
+  DoArtWorx (no lodging): $540
+  Ox-Bow (no instruction): $600
+  Arrowmont/Shenandoah: $811–$945
+
+WHY $500 WORKS
+- Above self-directed options — because she's offering instruction + curation
+- In line with Paper & i ($499–$549) and Art & Contemplation ($500–$700)
+- Better value than DoArtWorx ($540 without lodging) or Ox-Bow ($600 without instruction)
+- Approachable for first-timers; builds repeat audience
+
+THE FORMULA
+  (Fixed Costs + Variable Costs × Guests) × (1 + Buffer) / (1 - Margin) / Guests = Price Per Person
+
+NASHVILLE, IN ADVANTAGES
+- Established artist colony (100+ years), Indiana Cultural District
+- Brown County Art Gallery (est. 1926), multiple studios
+- Natural beauty — state park, rolling hills, forests
+- Walkable downtown, existing art tourism audience
+- No structured visual art retreat currently exists — open market
+- The setting does the work — you don't need a resort when the town is the draw
+
+KEY DECISIONS
+1. Price with confidence. $500 is accessible, not cheap.
+2. Require a deposit (~$150). Reduces no-shows.
+3. Keep it simple. One price, everything included.
+4. Validate with 10–15 conversations first.
+5. Buffer 10–15% for surprises.
+
+WHAT MAKES RETREATS GREAT
+1. Connections > curriculum
+2. Welcome all levels explicitly
+3. Balance structure with free time
+4. Atmosphere > amenities (Nashville provides this for free)
+5. Small groups (8–12)
+6. First hour sets the tone
+7. Feed people well (thoughtful > fancy)
+8. End with momentum
+9. Your energy sets the room`,
+
+comparison: `MARKET COMPARISON — Where ~$500 Sits (May 2026)
+
+━━━ NICOLE'S POSITION ━━━
+  Local self-directed (no instruction)............ $280–$400
+  ► Nicole's retreat (~$500) ◄
+  DoArtWorx (no lodging).......................... $540
+  Paper & i (weekend all-inclusive)................ $499–$549
+  Ox-Bow (no instruction)......................... $600
+  Arrowmont weekend (institutional)............... $811–$931
+
+━━━ WHAT $500 INCLUDES vs. OTHERS ━━━
+                    Waycross   NICOLE    DoArtWorx  Ox-Bow   Arrowmont
+                    $280-350   ~$500     $540       $600     $811+
+  Instruction        —          ✓         ✓          —        ✓
+  Supplies           —          ✓         ✓          —        ✓
+  Meals              ✓          ✓         ✓          ✓        ✓
+  Lodging            ✓          ✓         —          ✓        ✓
+  Small group        varies     8-12      6          open     varies
+  Curated exp.       —          ✓         —          —        ✓
+
+Nicole offers MORE than DoArtWorx ($540, no lodging) and Ox-Bow ($600, no instruction).
+
+━━━ BROWN COUNTY — WHAT EXISTS NOW ━━━
+  Waycross: $280–$350 (self-directed, no instruction)
+  Winter Wooly: ~$300–$400 (fiber arts, 90 people, meals optional)
+  SCBWI: ~$280–$350 (writing, 8 people)
+  Art Guild: $165–$195/session (no retreat format)
+
+  What DOESN'T exist:
+  • All-inclusive visual art retreat with instruction
+  • Small-group curated creative weekend
+  • Anything at the ~$500 all-in price point
+  Nicole fills all three gaps.
+
+━━━ WHY $500 WORKS ━━━
+- Above self-directed ($280–$400) — she's offering real instruction + curation
+- In line with established retreats (Paper & i, Art & Contemplation)
+- Better value than programs charging more for less
+- "I can say yes without agonizing" price point
+- Builds repeat audience; can raise prices once she has testimonials
+
+━━━ COMPARABLE TOWNS ━━━
+  Mineral Point, WI — Shake Rag Alley, $50–$295/workshop (no lodging)
+  Saugatuck, MI — Ox-Bow, $600/3-night retreat (no instruction)
+  Gatlinburg, TN — Arrowmont, $811+/weekend
+  Nashville, IN — Nothing yet. Nicole is first.
+
+Sources: waycrossccc.org, paigeshipleydesigns.com, paperandi.com, doartworx.com,
+ox-bow.org, arrowmont.org, essa-art.org, shenandoahartdestination.com`,
+
+research: `DETAILED RESEARCH — Nashville, IN Retreat Market
+
+━━━ THE ~$500 PRICE POINT ━━━
+Who else lives here and what they include:
+
+• Paper & i "Art as Self Care" — $499–$549
+  Weekend overnight, 5 meals + housing + instruction, small group
+• DoArtWorx (Oulu WI) — $540
+  4 days, meals + 13hrs instruction, NO lodging, only 6 spots
+• Art & Contemplation (Southeast US) — $500–$700
+  2 nights, lodging + meals + workshops + materials
+• Ox-Bow Artists Retreat (Saugatuck MI) — $600
+  3 nights, lodging + meals + studio, NO instruction
+• Michelle Guitard (ON) — ~$560 USD
+  Weekend, lodging + meals + instruction, intimate group
+
+Nicole at ~$500 with lodging + meals + instruction + supplies
+= more than DoArtWorx and Ox-Bow offer at higher prices.
+
+━━━ LOCAL COMPETITIVE LANDSCAPE ━━━
+What currently exists in/near Nashville, IN:
+
+• Waycross Artists/Writers Retreat — $280–$350
+  Self-directed, no instruction
+• Winter Wooly Retreat — ~$300–$400
+  Fiber arts (knitting), 90 people, meals optional
+• SCBWI Spring Into Story — ~$280–$350
+  Writing-focused, 8 writers max
+• Brown County Art Guild — $165–$195/session
+  No retreat format
+
+THE GAP: No all-inclusive visual art retreat exists in Brown County.
+
+━━━ MAKING $500 FEEL LIKE A STEAL ━━━
+• All-inclusive simplicity — one price, no surprises
+• Small group (8–12) — intimacy is the luxury
+• The setting does the work — Nashville's reputation is free value
+• Personal touches over expensive ones
+• Feed people well (thoughtful > fancy)
+• The Winter Wooly charges $300–$400 for 90 people in a hotel.
+  Nicole charges $500 for 8–12 in an intimate setting with real instruction.
+  Completely different experience.
+
+━━━ DEPOSITS & PAYMENTS ━━━
+At ~$500, keep it simple:
+• $150 deposit (non-refundable)
+• Balance due 30 days before
+• Refund minus deposit if cancelled 30+ days out
+
+━━━ INDUSTRY CONTEXT ━━━
+• 88% of wellness trips are domestic (GWI 2025)
+• US consumers spend ~$6,300/person/year on wellness
+• Market growing 7.6% annually through 2029
+• One host found willingness-to-pay was 50% higher than charged
+  → At $500, Nicole is likely under what people would pay.
+  That's fine for a first retreat — builds goodwill and repeat attendees.
+
+Sources: GWI 2025, paperandi.com, doartworx.com, ox-bow.org,
+waycrossccc.org, paigeshipleydesigns.com, selvaradov.net`
+};
+
+function openDoc(key) {
+  document.getElementById('modal-content').textContent = docs[key];
+  document.getElementById('modal-overlay').classList.add('active');
+}
+function closeModal(e) { if (e.target === e.currentTarget) e.currentTarget.classList.remove('active'); }
+
+// --- Popups ---
+const popups = {
+venue: `<h4>Venue / Property</h4>
+<p><strong>This is the total venue cost for the entire stay</strong> — not per night or per person.</p>
+<p style="margin-top:8px"><strong>Types to consider:</strong></p>
+<ul>
+<li>Large cabin as combined venue + lodging (simplest)</li>
+<li>Dedicated event space + separate lodging</li>
+<li>Inn/hotel meeting room + rooms</li>
+</ul>
+<p style="margin-top:8px"><strong>Art retreat considerations:</strong></p>
+<ul>
+<li>Natural light (critical for painting)</li>
+<li>Water access for cleanup</li>
+<li>Ventilation if using solvents</li>
+<li>~6 ft table/easel space per person</li>
+<li>Shared common area for meals/gathering</li>
+<li>Kitchen or catering access</li>
+</ul>
+<p style="margin-top:8px"><strong>Nashville IN / Brown County options:</strong></p>
+<ul>
+<li>Barn Burner: 1,000 sq ft event space + lodging for 29, 9BR/6BA, catering kitchen, downtown — <a href="https://bcbarnburner.com/event-space" target="_blank">bcbarnburner.com</a></li>
+<li>Brown County Inn: meeting rooms (Woodland 828 sq ft, Town Hall 3,220 sq ft), rooms from $86–89/night — <a href="https://browncountyinn.com/groups" target="_blank">browncountyinn.com</a></li>
+<li>Brown County Log Cabins: $155–200/night various sizes — <a href="https://browncountylogcabins.com" target="_blank">browncountylogcabins.com</a></li>
+<li>Elm Lodge: 4BR/3BA, sleeps 12, ~$200/night</li>
+<li>Brown County Art Gallery: 15,000 sq ft, est. 1926, rentable</li>
+<li>Second Story Studio: gallery + lounge, rentable</li>
+<li>Airbnb houses: $150–400/night — <a href="https://airbnb.com/nashville-in" target="_blank">airbnb.com</a></li>
+</ul>
+<p style="margin-top:8px"><strong>Example:</strong> 3-night retreat at a large cabin ($200/night) = $600 total venue cost.</p>
+<p class="source">Sources: bcbarnburner.com, browncountyinn.com, browncountylogcabins.com, airbnb.com</p>`,
+
+fee: `<h4>Your Fee</h4>
+<p><strong>This is your paycheck</strong> — separate from margin/profit on the retreat itself.</p>
+<p style="margin-top:8px">Think of it as: what would you charge to teach a multi-day workshop? This covers your time planning, preparing materials, teaching, and being "on" for the duration.</p>
+<p style="margin-top:8px"><strong>Tips:</strong></p>
+<ul>
+<li>Calculate your hourly rate × total hours (including prep)</li>
+<li>Or set a flat workshop fee you're comfortable with</li>
+<li>This is a fixed cost — it doesn't change with guest count</li>
+<li>Margin (set above) is additional profit on top of this</li>
+</ul>
+<p style="margin-top:8px"><strong>Range:</strong> $500–$3,000+ depending on duration and expertise level.</p>`,
+
+insurance: `<h4>Insurance</h4>
+<p><strong>Event liability insurance</strong> protects you if someone gets hurt or property is damaged.</p>
+<p style="margin-top:8px"><strong>Price ranges:</strong></p>
+<ul>
+<li>Event liability policy: $114–$285 — <a href="https://insureon.com" target="_blank">insureon.com</a></li>
+<li>Insurance Canopy 5+ day policy: from $114 — <a href="https://insurancecanopy.com/event-insurance" target="_blank">insurancecanopy.com</a></li>
+<li>ACT arts workshop coverage: $200–$400 — <a href="https://actinsurance.com/workshop-class-coverage" target="_blank">actinsurance.com</a></li>
+</ul>
+<p style="margin-top:8px"><strong>Tips:</strong></p>
+<ul>
+<li>Many venues require proof of insurance</li>
+<li>Short-term event policies are affordable</li>
+<li>Check if your existing business policy covers events</li>
+</ul>
+<p class="source">Sources: insureon.com, insurancecanopy.com, actinsurance.com</p>`,
+
+marketing: `<h4>Marketing</h4>
+<p><strong>How you'll fill those spots.</strong></p>
+<p style="margin-top:8px"><strong>Free options:</strong></p>
+<ul>
+<li>Brown County events calendar — <a href="https://browncounty.com/mec-category/classes-workshops" target="_blank">browncounty.com</a></li>
+<li>Brown County Artists Association — <a href="https://browncountyartists.org" target="_blank">browncountyartists.org</a></li>
+<li>Word of mouth, email list, social posts</li>
+</ul>
+<p style="margin-top:8px"><strong>Paid options:</strong></p>
+<ul>
+<li>Social media ads: $100–$500</li>
+<li>Landing page (Squarespace/Wix): $15–30/month</li>
+</ul>
+<p style="margin-top:8px"><strong>Tip:</strong> For a first retreat, word of mouth + free listings often fill 8–12 spots without paid ads.</p>
+<p class="source">Sources: browncounty.com, browncountyartists.org</p>`,
+
+'other-fixed': `<h4>Other Fixed Costs</h4>
+<p>Anything else that stays the same regardless of guest count:</p>
+<ul>
+<li>Equipment rental (easels, tables, lighting)</li>
+<li>Guest instructor/assistant fee</li>
+<li>Venue cleaning fee</li>
+<li>Permits or licenses</li>
+<li>Photography/videography</li>
+</ul>`,
+
+lodging: `<h4>Lodging Per Person Per Night</h4>
+<p><strong>What each guest pays for sleeping arrangements, per night.</strong></p>
+<p style="margin-top:8px"><strong>Nashville IN / Brown County ranges:</strong></p>
+<ul>
+<li>Large cabin split 8–10 ways: ~$20–25/night each</li>
+<li>Cabin split 4 ways: ~$50/night each — <a href="https://browncountylogcabins.com" target="_blank">browncountylogcabins.com</a></li>
+<li>Barn Burner shared: ~$40–60/person/night</li>
+<li>Barn Burner private: ~$60–90/person/night</li>
+<li>Brown County Inn: from $86–89/night (hotel room)</li>
+<li>Combined venue+lodging: $200/night ÷ 10 guests = $20/person/night</li>
+</ul>
+<p style="margin-top:8px"><strong>Tip:</strong> If you're using a large cabin as both venue and lodging, you might put the full cost under "Venue" and set lodging to $0 here.</p>
+<p class="source">Sources: browncountylogcabins.com, browncountyinn.com, travelweekly.com, kayak.com, soulstruthcoaching.com</p>`,
+
+meals: `<h4>Meals Per Person Per Day</h4>
+<p><strong>Total daily food cost per guest.</strong> This multiplies by (nights + 1) days.</p>
+<p style="margin-top:8px"><strong>Typical ranges:</strong></p>
+<ul>
+<li>DIY breakfast: $8–12/person</li>
+<li>Lunch group order: $12–20/person</li>
+<li>Catered dinner: $25–45/person</li>
+<li>Restaurant dinner out: $20–40/person (downtown Nashville IN walkable)</li>
+<li>Budget potluck/communal: $5–10/person</li>
+</ul>
+<p style="margin-top:8px"><strong>Example day:</strong> $10 breakfast + $15 lunch + $35 dinner = $60/person/day</p>
+<p style="margin-top:8px"><strong>Tips:</strong></p>
+<ul>
+<li>Barn Burner has a catering kitchen (fridge, three-bay sink, prep, ice machine) — <a href="https://bcbarnburner.com" target="_blank">bcbarnburner.com</a></li>
+<li>Mix DIY and catered to control costs</li>
+<li>Use the 📋 button to itemize by meal</li>
+</ul>
+<p class="source">Sources: browncounty.com/taste, bcbarnburner.com, yellowpages.com (Homegrown Hospitality)</p>`,
+
+supplies: `<h4>Art Supplies Per Person</h4>
+<p><strong>Materials each guest will use during the retreat.</strong></p>
+<p style="margin-top:8px"><strong>Ranges:</strong></p>
+<ul>
+<li>Budget (guests bring own + you provide paint): $10–$20</li>
+<li>Basic kit (canvas, acrylic set, brushes): $25–$50</li>
+<li>Mid-range (artist-grade, stretched canvas): $60–$120</li>
+<li>Premium (pro supplies as gift basket): $150–$300</li>
+</ul>
+<p style="margin-top:8px"><strong>Where to buy:</strong></p>
+<ul>
+<li><strong>Amazon</strong> — bulk canvas packs, brush sets, paint kits. Prime shipping, easy returns. Great for basic/mid-range kits.</li>
+<li><strong>Blick Art Materials</strong> — wholesale/bulk pricing for 10+ of same item. <a href="https://dickblick.com" target="_blank">dickblick.com</a></li>
+<li><strong>Jerry's Artarama</strong> — bulk deals and classroom packs. <a href="https://jerrysartarama.com" target="_blank">jerrysartarama.com</a></li>
+<li><strong>Dollar Tree / Walmart</strong> — surprisingly decent for basics (canvases, brushes, palettes)</li>
+<li><strong>Local art stores</strong> — may offer group discounts if you ask</li>
+</ul>
+<p style="margin-top:8px"><strong>Tips:</strong></p>
+<ul>
+<li>Order 4–6 weeks early for best prices and shipping options</li>
+<li>Buy 1–2 extra of everything (spills, mistakes, last-minute guests)</li>
+<li>Ask guests to bring their own brushes/easels to reduce your cost</li>
+<li>Bulk canvas packs on Amazon: 10-pack 11x14 for ~$25 ($2.50 each)</li>
+</ul>
+<p class="source">Sources: amazon.com, dickblick.com, jerrysartarama.com pricing.</p>`,
+
+welcome: `<h4>Welcome Kit (Optional)</h4>
+<p><strong>A nice-to-have, not a must.</strong> A small gift or supply bundle guests receive on arrival.</p>
+<p style="margin-top:8px"><strong>Ideas:</strong></p>
+<ul>
+<li>Tote bag + sketchbook + local treats: $15–30</li>
+<li>Custom apron or smock: $10–20</li>
+<li>Local artisan items (candle, soap): $10–25</li>
+<li>Premium example (Tina Williams): $150–300 gift basket</li>
+</ul>
+<p style="margin-top:8px"><strong>Tip:</strong> Even a $10 welcome kit creates a strong first impression. It's the first thing guests touch.</p>
+<p class="source">Sources: tinawilliamsart.com (premium example)</p>`
+};
+
+function showPopup(key) {
+  document.getElementById('popup-content').innerHTML = popups[key];
+  document.getElementById('popup-overlay').classList.add('active');
+}
+function closePopup(e) { if (e.target === e.currentTarget) e.currentTarget.classList.remove('active'); }
+
+// Init
+renderCompare();
+</script>
+</body>
+</html>
