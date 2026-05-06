@@ -239,7 +239,11 @@ section { margin-bottom: 12px; }
     <div class="result-section"><h3>Market Position</h3><div class="market-bar"><div class="market-marker" id="market-min"></div><div class="market-marker" id="market-max"></div></div><div class="market-labels"><span>$300</span><span>$1,500</span><span>$3,000</span></div><p style="font-size:0.7em;color:#999;margin-top:4px">Scale based on 20+ verified retreat prices. See Market Comparison doc.</p></div>
     <div class="result-section"><h3>Payment Plan</h3><div class="payment-plan" id="payment-plan"></div></div>
     <div class="result-section" id="tiers-result" style="display:none"><h3>Tier Pricing</h3><div id="tiers-output"></div></div>
-    <div class="result-section"><h3>Compare Scenarios</h3><button class="compare-btn" onclick="saveScenario()">Save Current</button><div id="compare-output"></div></div>
+    <div class="result-section"><h3>Compare Scenarios</h3>
+    <div id="save-area">
+      <div style="display:flex;gap:6px;margin-bottom:8px"><input type="text" id="scenario-name-input" placeholder="Name this scenario" style="flex:1;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:0.85em"><button class="compare-btn" onclick="saveScenario()" style="margin:0;white-space:nowrap">Save</button></div>
+    </div>
+    <div id="compare-output"></div></div>
   </div>
 </div>
 </div>
@@ -489,8 +493,8 @@ function renderTiers() {
 function saveScenario() {
   const minG = val('min-guests'), maxG = val('max-guests');
   if (!minG || !maxG) return;
-  const name = prompt('Name this scenario:', 'Scenario ' + (state.scenarios.length + 1));
-  if (!name) return;
+  const nameInput = document.getElementById('scenario-name-input');
+  const name = nameInput.value.trim() || 'Scenario ' + (state.scenarios.length + 1);
   const atMin = calc(minG), atMax = calc(maxG);
   state.scenarios.push({
     name: name,
@@ -502,6 +506,7 @@ function saveScenario() {
     ts: Date.now()
   });
   localStorage.setItem('retreat-scenarios', JSON.stringify(state.scenarios));
+  nameInput.value = '';
   renderCompare();
 }
 function clearScenarios() { state.scenarios = []; localStorage.removeItem('retreat-scenarios'); renderCompare(); }
