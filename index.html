@@ -148,12 +148,12 @@ section { margin-bottom: 12px; }
     <div class="section-title">The Retreat</div>
     <div class="field" style="margin-bottom:12px;padding:8px 10px;background:var(--warm-white);border:1px solid var(--border);border-radius:var(--radius)">
       <label style="font-weight:600">Target price per person <span style="font-weight:400;color:var(--brown-light)">(optional — leave blank to just build from costs)</span></label>
-      <input type="number" id="target-price" placeholder="e.g. 750" oninput="update()">
+      <input type="number" id="target-price" placeholder="e.g. 750" oninput="autoFillFromTarget()">
     </div>
-    <div class="field"><label>Nights</label><input type="number" id="nights" min="1" placeholder="e.g. 3" oninput="update();calcLodgingFromVenue()"></div>
+    <div class="field"><label>Nights</label><input type="number" id="nights" min="1" placeholder="e.g. 3" oninput="update();calcLodgingFromVenue();autoFillFromTarget()"></div>
     <div class="row">
-      <div class="field"><label>Min Guests</label><input type="number" id="min-guests" min="1" placeholder="e.g. 8" oninput="update();calcLodgingFromVenue()"></div>
-      <div class="field"><label>Max Guests</label><input type="number" id="max-guests" min="1" placeholder="e.g. 12" oninput="update();calcLodgingFromVenue()"></div>
+      <div class="field"><label>Min Guests</label><input type="number" id="min-guests" min="1" placeholder="e.g. 8" oninput="update();calcLodgingFromVenue();autoFillFromTarget()"></div>
+      <div class="field"><label>Max Guests</label><input type="number" id="max-guests" min="1" placeholder="e.g. 12" oninput="update();calcLodgingFromVenue();autoFillFromTarget()"></div>
     </div>
   </section>
 
@@ -274,6 +274,75 @@ function setFeeMode(mode) {
   update();
 }
 
+// --- Auto-fill from target price ---
+function autoFillFromTarget() {
+  const target = val('target-price');
+  const nights = val('nights') || 3;
+  const days = nights + 1;
+  const minG = val('min-guests') || 1;
+  const maxG = val('max-guests') || minG || 8;
+  const margin = val('margin') / 100;
+  const buffer = val('buffer') / 100;
+
+  if (target <= 0) return;
+
+  // Reverse the calculator formula to find what total cost needs to be
+  // Calculator: price = bufferedCost / guests / (1 - margin)
+  // So: bufferedCost = target * guests * (1 - margin)
+  // And: totalCost = bufferedCost / (1 + buffer)
+  // Use midpoint of min/max guests for a balanced distribution
+  const midG = Math.round((minG + maxG) / 2);
+  const bufferedCost = target * midG * (1 - margin);
+  const totalCost = bufferedCost / (1 + buffer);
+
+  // Split into fixed vs per-person
+  // Typical split: ~48% fixed, ~52% variable (per-person * guests)
+  const fixedBudget = totalCost * 0.48;
+  const perPersonBudget = (totalCost * 0.52) / midG;
+
+  // Distribute fixed costs
+  const venue = Math.round(fixedBudget * 0.62);      // ~30% of total
+  const fee = Math.round(fixedBudget * 0.21);        // ~10% of total
+  const insurance = Math.round(fixedBudget * 0.06);  // ~3% of total
+  const marketing = Math.round(fixedBudget * 0.11);  // ~5% of total
+
+  // Distribute per-person costs
+  const lodging = Math.round(perPersonBudget * 0.45 / nights);
+  const meals = Math.round(perPersonBudget * 0.35 / days);
+  const supplies = Math.round(perPersonBudget * 0.13);
+  const welcome = Math.round(perPersonBudget * 0.07);
+
+  const fields = [
+    { id: 'cost-venue', value: venue },
+    { id: 'cost-fee', value: fee },
+    { id: 'cost-insurance', value: insurance },
+    { id: 'cost-marketing', value: marketing },
+    { id: 'cost-lodging', value: lodging },
+    { id: 'cost-meals', value: meals },
+    { id: 'cost-supplies', value: supplies },
+    { id: 'cost-welcome', value: welcome }
+  ];
+
+  fields.forEach(f => {
+    const el = document.getElementById(f.id);
+    if (!el.value || el.dataset.autoTarget === 'true') {
+      el.value = f.value;
+      el.dataset.autoTarget = 'true';
+    }
+  });
+
+  update();
+}
+
+// Clear autoTarget flag when user manually edits any cost field
+['cost-venue','cost-fee','cost-insurance','cost-marketing','cost-lodging','cost-meals','cost-supplies','cost-welcome'].forEach(id => {
+  document.getElementById(id).addEventListener('input', function() {
+    if (this.dataset.autoTarget === 'true') {
+      this.dataset.autoTarget = 'false';
+    }
+  });
+});
+
 // --- Core calculation ---
 function calcLodgingFromVenue() {
   const input = document.getElementById('cost-lodging');
@@ -347,7 +416,10 @@ function calc(guests) {
 
 // --- Render ---
 function update() {
-  const minG = val('min-guests'), maxG = val('max-guests');
+  let minG = val('min-guests'), maxG = val('max-guests');
+  // Default min to 1 if blank but max is filled, use max as both if only max is filled
+  if (!minG && maxG) minG = 1;
+  if (!maxG && minG) maxG = minG;
   if (!minG || !maxG || minG > maxG) {
     document.getElementById('results').style.display = 'none';
     document.getElementById('empty-state').style.display = 'block';
@@ -372,7 +444,27 @@ function update() {
     if (diff >= 0) {
       targetEl.innerHTML = `<div style="padding:8px;background:#e8f5e9;border-radius:var(--radius);font-size:0.82em;margin-bottom:12px">Target: ${fmt(target)} — you're <strong>${fmt(diff)}</strong> under. Room to add value or increase margin.</div>`;
     } else {
-      targetEl.innerHTML = `<div style="padding:8px;background:#fff3e0;border-radius:var(--radius);font-size:0.82em;margin-bottom:12px">Target: ${fmt(target)} — you're <strong>${fmt(Math.abs(diff))}</strong> over. Reduce costs or increase guests to close the gap.</div>`;
+      // Calculate minimum guests needed to hit target with current costs
+      // price = (fixed + perPerson*g)*(1+buffer) / g / (1-margin)
+      // target*g*(1-margin) = (fixed + perPerson*g)*(1+buffer)
+      // target*g*(1-margin) = fixed*(1+buffer) + perPerson*g*(1+buffer)
+      // g*(target*(1-margin) - perPerson*(1+buffer)) = fixed*(1+buffer)
+      // g = fixed*(1+buffer) / (target*(1-margin) - perPerson*(1+buffer))
+      const fixedCost = atMin.fixed;
+      const perPerson = atMin.perPerson;
+      const buf = atMin.buffer;
+      const mar = atMin.margin;
+      const denom = target * (1 - mar) - perPerson * (1 + buf);
+      let hint = '';
+      if (denom > 0) {
+        const minNeeded = Math.ceil(fixedCost * (1 + buf) / denom);
+        if (minNeeded > minG) {
+          hint = `<div style="font-size:0.78em;color:var(--brown-light);margin-top:4px">💡 You need at least <strong>${minNeeded} guests</strong> with ${fmt(fixedCost)} in fixed costs to hit ${fmt(target)}/person.</div>`;
+        }
+      } else {
+        hint = `<div style="font-size:0.78em;color:var(--brown-light);margin-top:4px">💡 Per-person costs alone exceed the target. Reduce meals, lodging, or supplies to make ${fmt(target)}/person possible.</div>`;
+      }
+      targetEl.innerHTML = `<div style="padding:8px;background:#fff3e0;border-radius:var(--radius);font-size:0.82em;margin-bottom:12px">Target: ${fmt(target)} — you're <strong>${fmt(Math.abs(diff))}</strong> over. Reduce costs or increase guests to close the gap.${hint}</div>`;
     }
   } else {
     targetEl.innerHTML = '';
