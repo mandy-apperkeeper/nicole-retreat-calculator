@@ -241,9 +241,11 @@ section { margin-bottom: 12px; }
     <div class="result-section" id="tiers-result" style="display:none"><h3>Tier Pricing</h3><div id="tiers-output"></div></div>
     <div class="result-section"><h3>Compare Scenarios</h3>
     <div id="save-area">
-      <div style="display:flex;gap:6px;margin-bottom:8px"><input type="text" id="scenario-name-input" placeholder="Name this scenario" style="flex:1;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:0.85em"><button class="compare-btn" onclick="saveScenario()" style="margin:0;white-space:nowrap">Save</button></div>
+      <div style="display:flex;gap:6px;margin-bottom:6px"><input type="text" id="scenario-name-input" placeholder="Name this scenario" style="flex:1;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:0.85em"><button class="compare-btn" onclick="saveScenario()" style="margin:0;white-space:nowrap">Save</button></div>
+      <input type="text" id="scenario-notes-input" placeholder="Notes (optional)" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:0.8em;margin-bottom:8px">
     </div>
-    <div id="compare-output"></div></div>
+    <div id="compare-output"></div>
+    <div id="compare-insights"></div></div>
   </div>
 </div>
 </div>
@@ -299,6 +301,20 @@ function loadInputs() {
 
 // Auto-save on any input change
 document.addEventListener('input', saveInputs);
+
+// Prompt to save scenario before leaving if there's unsaved work
+window.addEventListener('beforeunload', function(e) {
+  const minG = val('min-guests') || 1;
+  const maxG = val('max-guests');
+  if (maxG > 0 && (val('cost-venue') > 0 || val('cost-meals') > 0 || val('cost-lodging') > 0)) {
+    // Check if current state differs from last saved scenario
+    const lastSaved = state.scenarios[state.scenarios.length - 1];
+    if (!lastSaved || lastSaved.priceAtMin !== calc(minG).price) {
+      e.preventDefault();
+      e.returnValue = '';
+    }
+  }
+});
 
 function val(id) { return parseFloat(document.getElementById(id).value) || 0; }
 function fmt(n) { return '$' + Math.round(n).toLocaleString(); }
@@ -622,33 +638,148 @@ function renderTiers() {
 
 // --- Compare Scenarios ---
 function saveScenario() {
-  const minG = val('min-guests'), maxG = val('max-guests');
-  if (!minG || !maxG) return;
+  const minG = val('min-guests') || 1;
+  const maxG = val('max-guests') || minG;
+  if (!maxG) return;
   const nameInput = document.getElementById('scenario-name-input');
+  const notesInput = document.getElementById('scenario-notes-input');
   const name = nameInput.value.trim() || 'Scenario ' + (state.scenarios.length + 1);
+  const notes = notesInput.value.trim();
   const atMin = calc(minG), atMax = calc(maxG);
+  const midG = Math.round((minG + maxG) / 2);
+  const atMid = calc(midG);
+
+  // Save full input snapshot for reload
+  const snapshot = {};
+  PERSIST_FIELDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) snapshot[id] = el.value;
+  });
+
   state.scenarios.push({
-    name: name,
-    guests: `${minG}–${maxG}`,
+    name,
+    notes,
+    snapshot,
+    minG, maxG,
     nights: val('nights'),
-    price: `${fmt(atMax.price)} – ${fmt(atMin.price)}`,
-    fixed: fmt(atMin.fixed),
-    margin: val('margin') + '%',
+    priceAtMin: atMin.price,
+    priceAtMax: atMax.price,
+    priceAtMid: atMid.price,
+    fixedCost: atMin.fixed,
+    perPerson: atMin.perPerson,
+    profitAtMin: atMin.profit,
+    profitAtMax: atMax.profit,
+    margin: val('margin'),
+    buffer: val('buffer'),
+    target: val('target-price'),
     ts: Date.now()
   });
   localStorage.setItem('retreat-scenarios', JSON.stringify(state.scenarios));
   nameInput.value = '';
+  notesInput.value = '';
   renderCompare();
 }
-function clearScenarios() { state.scenarios = []; localStorage.removeItem('retreat-scenarios'); renderCompare(); }
+
+function loadScenario(i) {
+  const s = state.scenarios[i];
+  if (!s || !s.snapshot) return;
+  PERSIST_FIELDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && s.snapshot[id] !== undefined) el.value = s.snapshot[id];
+  });
+  if (s.snapshot['fee-mode']) setFeeMode(s.snapshot['fee-mode']);
+  document.getElementById('margin-val').textContent = (s.snapshot['margin'] || 20) + '%';
+  document.getElementById('buffer-val').textContent = (s.snapshot['buffer'] || 10) + '%';
+  update();
+}
+
+function removeScenario(i) {
+  state.scenarios.splice(i, 1);
+  localStorage.setItem('retreat-scenarios', JSON.stringify(state.scenarios));
+  renderCompare();
+}
+
+function clearScenarios() {
+  if (!confirm('Clear all saved scenarios?')) return;
+  state.scenarios = [];
+  localStorage.removeItem('retreat-scenarios');
+  renderCompare();
+}
+
 function renderCompare() {
   const el = document.getElementById('compare-output');
-  if (state.scenarios.length < 1) { el.innerHTML = ''; return; }
-  let html = '<table class="compare-table"><tr><th></th><th>Guests</th><th>Nights</th><th>Price Range</th><th>Fixed</th><th>Margin</th></tr>';
-  state.scenarios.forEach(s => { html += `<tr><td>${s.name}</td><td>${s.guests}</td><td>${s.nights}</td><td>${s.price}</td><td>${s.fixed}</td><td>${s.margin}</td></tr>`; });
+  const insightsEl = document.getElementById('compare-insights');
+  if (state.scenarios.length < 1) { el.innerHTML = ''; insightsEl.innerHTML = ''; return; }
+
+  // Table
+  let html = '<table class="compare-table"><tr><th></th><th>Guests</th><th>Nights</th><th>Price/Person</th><th>Profit</th><th>Margin</th><th></th></tr>';
+  state.scenarios.forEach((s, i) => {
+    const priceRange = s.priceAtMax ? `${fmt(s.priceAtMax)}–${fmt(s.priceAtMin)}` : fmt(s.priceAtMin || 0);
+    const profit = s.profitAtMin !== undefined ? fmt(s.profitAtMin) : '—';
+    html += `<tr>
+      <td><strong>${s.name}</strong>${s.notes ? '<br><span style="font-size:0.85em;color:var(--brown-light)">' + s.notes + '</span>' : ''}</td>
+      <td>${s.minG}–${s.maxG}</td>
+      <td>${s.nights || '—'}</td>
+      <td>${priceRange}</td>
+      <td>${profit}</td>
+      <td>${s.margin || '—'}%</td>
+      <td style="white-space:nowrap">
+        ${s.snapshot ? '<button onclick="loadScenario('+i+')" style="background:none;border:none;cursor:pointer;font-size:0.9em" title="Load">↩️</button>' : ''}
+        <button onclick="removeScenario(${i})" style="background:none;border:none;cursor:pointer;font-size:0.9em;color:var(--rust)" title="Delete">×</button>
+      </td>
+    </tr>`;
+  });
   html += '</table>';
-  if (state.scenarios.length > 0) html += `<button class="compare-btn" style="background:var(--rust);margin-top:6px" onclick="clearScenarios()">Clear All</button>`;
+  if (state.scenarios.length > 1) html += `<button class="compare-btn" style="background:var(--rust);margin-top:6px" onclick="clearScenarios()">Clear All</button>`;
   el.innerHTML = html;
+
+  // Insights (only show with 2+ scenarios)
+  if (state.scenarios.length < 2) { insightsEl.innerHTML = ''; return; }
+
+  const insights = [];
+  const target = val('target-price');
+  const validScenarios = state.scenarios.filter(s => s.priceAtMin > 0);
+
+  // Most profitable
+  const byProfit = [...validScenarios].sort((a, b) => (b.profitAtMin || 0) - (a.profitAtMin || 0));
+  if (byProfit.length) insights.push(`💰 <strong>${byProfit[0].name}</strong> is most profitable (${fmt(byProfit[0].profitAtMin)} at min guests)`);
+
+  // Most affordable for attendees
+  const byPrice = [...validScenarios].sort((a, b) => (a.priceAtMid || a.priceAtMin) - (b.priceAtMid || b.priceAtMin));
+  if (byPrice.length) insights.push(`🎨 <strong>${byPrice[0].name}</strong> is most accessible for attendees (${fmt(byPrice[0].priceAtMid || byPrice[0].priceAtMin)}/person at midpoint)`);
+
+  // Closest to target
+  if (target > 0 && validScenarios.length) {
+    const byTarget = [...validScenarios].sort((a, b) => {
+      const aMid = (a.priceAtMin + a.priceAtMax) / 2;
+      const bMid = (b.priceAtMin + b.priceAtMax) / 2;
+      return Math.abs(aMid - target) - Math.abs(bMid - target);
+    });
+    const closest = byTarget[0];
+    const closestMid = (closest.priceAtMin + closest.priceAtMax) / 2;
+    const diff = closestMid - target;
+    insights.push(`🎯 <strong>${closest.name}</strong> is closest to your ${fmt(target)} target (${diff > 0 ? '+' : ''}${fmt(diff)})`);
+  }
+
+  // Risk consideration
+  const highFixed = [...validScenarios].sort((a, b) => (b.fixedCost || 0) - (a.fixedCost || 0));
+  const lowFixed = [...validScenarios].sort((a, b) => (a.fixedCost || 0) - (b.fixedCost || 0));
+  if (highFixed.length > 1 && highFixed[0].fixedCost > lowFixed[0].fixedCost * 1.3) {
+    insights.push(`⚠️ <strong>${highFixed[0].name}</strong> has higher fixed costs (${fmt(highFixed[0].fixedCost)}) — more risk if attendance is low`);
+  }
+
+  // Best balance
+  if (validScenarios.length >= 3) {
+    const scored = validScenarios.map(s => {
+      const priceMid = (s.priceAtMin + s.priceAtMax) / 2;
+      const priceScore = target > 0 ? (1 - Math.abs(priceMid - target) / target) : 0.5;
+      const profitScore = s.profitAtMin > 0 ? Math.min(s.profitAtMin / 1000, 1) : 0;
+      return { name: s.name, score: priceScore * 0.5 + profitScore * 0.5 };
+    }).sort((a, b) => b.score - a.score);
+    insights.push(`⭐ <strong>${scored[0].name}</strong> offers the best balance of price and profit`);
+  }
+
+  insightsEl.innerHTML = `<div style="margin-top:10px;padding:10px;background:var(--warm-white);border-radius:var(--radius);border:1px solid var(--border)"><div style="font-size:0.78em;font-weight:600;color:var(--brown);margin-bottom:6px">Insights</div><div style="font-size:0.78em;line-height:1.7">${insights.join('<br>')}</div></div>`;
 }
 
 // --- Documents ---
