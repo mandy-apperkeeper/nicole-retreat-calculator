@@ -261,6 +261,45 @@ section { margin-bottom: 12px; }
 // --- State ---
 const state = { tiers: [], scenarios: JSON.parse(localStorage.getItem('retreat-scenarios') || '[]') };
 
+// --- Persistence ---
+const SAVE_KEY = 'retreat-calc-inputs';
+const PERSIST_FIELDS = ['target-price','nights','min-guests','max-guests','margin','buffer','cost-venue','cost-fee','cost-insurance','cost-marketing','cost-other-fixed','cost-lodging','cost-meals','cost-supplies','cost-welcome','cost-other-pp','fee-mode','meal-breakfast','meal-lunch','meal-dinner','meal-snacks','supply-canvas','supply-paint','supply-brushes','supply-other'];
+
+function saveInputs() {
+  const data = {};
+  PERSIST_FIELDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) data[id] = el.value;
+  });
+  data._tiers = state.tiers;
+  data._goals = Array.from(document.querySelectorAll('.goals-grid input[type=checkbox]')).map(c => c.checked);
+  localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+}
+
+function loadInputs() {
+  const raw = localStorage.getItem(SAVE_KEY);
+  if (!raw) return;
+  try {
+    const data = JSON.parse(raw);
+    PERSIST_FIELDS.forEach(id => {
+      const el = document.getElementById(id);
+      if (el && data[id] !== undefined && data[id] !== '') el.value = data[id];
+    });
+    if (data._tiers) { state.tiers = data._tiers; renderTiers(); }
+    if (data._goals) {
+      document.querySelectorAll('.goals-grid input[type=checkbox]').forEach((c, i) => { c.checked = !!data._goals[i]; });
+    }
+    // Restore fee mode toggle
+    if (data['fee-mode']) setFeeMode(data['fee-mode']);
+    // Update slider labels
+    document.getElementById('margin-val').textContent = (data['margin'] || 20) + '%';
+    document.getElementById('buffer-val').textContent = (data['buffer'] || 10) + '%';
+  } catch(e) {}
+}
+
+// Auto-save on any input change
+document.addEventListener('input', saveInputs);
+
 function val(id) { return parseFloat(document.getElementById(id).value) || 0; }
 function fmt(n) { return '$' + Math.round(n).toLocaleString(); }
 
@@ -931,6 +970,8 @@ function showPopup(key) {
 function closePopup(e) { if (e.target === e.currentTarget) e.currentTarget.classList.remove('active'); }
 
 // Init
+loadInputs();
+update();
 renderCompare();
 </script>
 </body>
